@@ -1141,7 +1141,7 @@ function OrionLib:MakeWindow(WindowConfig)
 					MakeElement("Corner")
 				}), "Second")
 
-                DropdownContainer.CanvasSize = UDim2.new(0, 0, 0, 60)
+                DropdownContainer.CanvasSize = UDim2.new(0, 0, 0, 2000)
 
 				local function AddOptions(Options)
 					for _, Option in pairs(Options) do
