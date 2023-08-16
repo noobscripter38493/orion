@@ -1020,25 +1020,29 @@ function OrionLib:MakeWindow(WindowConfig)
 
 				SliderBar.InputBegan:Connect(function(Input)
 					local Type = Input.UserInputType
-					if Type == Enum.UserInputType.MouseButton1 or Type == Enum.UserInputType.Touch then 
-						Dragging = true 
+					if Type == Enum.UserInputType.MouseButton1 then 
+						Dragging = true
 					end 
+				end)
+
+				SliderBar.TouchPan:Connect(function(_, translation, _, state)
+					if state == Enum.UserInputService.Change then
+						local SizeScale = math.clamp((translation.X - SliderBar.AbsolutePosition.X) / SliderBar.AbsoluteSize.X, 0, 1)
+						Slider:Set(SliderConfig.Min + (SliderConfig.Max - SliderConfig.Min) * SizeScale)
+					end
 				end)
 
 				SliderBar.InputEnded:Connect(function(Input)
 					local Type = Input.UserInputType
-					if Type == Enum.UserInputType.MouseButton1 or Type == Enum.UserInputType.Touch then 
+					if Type == Enum.UserInputType.MouseButton1 then 
 						Dragging = false
 					end 
 				end)
 
 				UserInputService.InputChanged:Connect(function(Input)
-					if Dragging then
-						local Type = Input.UserInputType
-						if Type == Enum.UserInputType.MouseMovement or Type == Enum.UserInputService.TouchMoved then
-							local SizeScale = math.clamp((Input.Position.X - SliderBar.AbsolutePosition.X) / SliderBar.AbsoluteSize.X, 0, 1)
-							Slider:Set(SliderConfig.Min + ((SliderConfig.Max - SliderConfig.Min) * SizeScale)) 
-						end
+					if Dragging and Input.UserInputType == Enum.UserInputType.MouseMovement then
+						local SizeScale = math.clamp((Input.Position.X - SliderBar.AbsolutePosition.X) / SliderBar.AbsoluteSize.X, 0, 1)
+						Slider:Set(SliderConfig.Min + (SliderConfig.Max - SliderConfig.Min) * SizeScale)
 					end
 				end)
 
