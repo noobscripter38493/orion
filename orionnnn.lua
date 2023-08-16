@@ -746,10 +746,7 @@ function OrionLib:MakeWindow(WindowConfig)
 			MakeElement("Padding", 15, 10, 10, 15)
 		}), "Divider")
 
-		AddConnection(Container.UIListLayout:GetPropertyChangedSignal("AbsoluteContentSize"), function()
-			print(Container, Container.CanvasSize)
-			Container.CanvasSize = UDim2.new(0, 0, 0, Container.UIListLayout.AbsoluteContentSize.Y + 30)
-		end)
+        Container.CanvasSize = UDim2.new(0, 0, 0, 2000)
 
 		if FirstTab then
 			FirstTab = false
@@ -1144,16 +1141,7 @@ function OrionLib:MakeWindow(WindowConfig)
 					MakeElement("Corner")
 				}), "Second")
 
-				AddConnection(DropdownList:GetPropertyChangedSignal("AbsoluteContentSize"), function()
-					while true do
-						task.wait()
-						if pcall(function()
-							DropdownContainer.CanvasSize = UDim2.new(0, 0, 0, DropdownList.AbsoluteContentSize.Y)
-						end) then
-							break
-						end
-					end
-				end)  
+                DropdownContainer.CanvasSize = UDim2.new(0, 0, 0, 60)
 
 				local function AddOptions(Options)
 					for _, Option in pairs(Options) do
