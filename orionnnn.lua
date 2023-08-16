@@ -749,6 +749,7 @@ function OrionLib:MakeWindow(WindowConfig)
 		}), "Divider")
 
 		AddConnection(Container.UIListLayout:GetPropertyChangedSignal("AbsoluteContentSize"), function()
+			print(Container, Container.CanvasSize)
 			Container.CanvasSize = UDim2.new(0, 0, 0, Container.UIListLayout.AbsoluteContentSize.Y + 30)
 		end)
 
