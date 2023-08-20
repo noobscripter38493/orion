@@ -1025,13 +1025,6 @@ function OrionLib:MakeWindow(WindowConfig)
 					end 
 				end)
 
-				SliderBar.TouchPan:Connect(function(_, translation, _, state)
-					if state == Enum.UserInputService.Change then
-						local SizeScale = math.clamp((translation.X - SliderBar.AbsolutePosition.X) / SliderBar.AbsoluteSize.X, 0, 1)
-						Slider:Set(SliderConfig.Min + (SliderConfig.Max - SliderConfig.Min) * SizeScale)
-					end
-				end)
-
 				SliderBar.InputEnded:Connect(function(Input)
 					local Type = Input.UserInputType
 					if Type == Enum.UserInputType.MouseButton1 then 
