@@ -24,16 +24,11 @@ local OrionLib = {
 	Folder = nil,
 }
 
---Feather Icons https://github.com/evoincorp/lucideblox/tree/master/src/modules/util - Created by 7kayoh
 local Icons = {}
 
 local Success, Response = pcall(function()
 	Icons = HttpService:JSONDecode(game:HttpGetAsync("https://raw.githubusercontent.com/evoincorp/lucideblox/master/src/modules/util/icons.json")).icons
 end)
-
-if not Success then
-	warn("\nOrion Library - Failed to load Feather Icons. Error code: " .. Response .. "\n")
-end	
 
 local function GetIcon(IconName)
 	if Icons[IconName] ~= nil then
@@ -72,27 +67,18 @@ function OrionLib:IsRunning()
 	else
 		return Orion.Parent == game:GetService("CoreGui")
 	end
-
 end
 
 local function AddConnection(Signal, Function)
-	if (not OrionLib:IsRunning()) then
+	if not OrionLib:IsRunning() then
 		return
 	end
+
 	local SignalConnect = Signal:Connect(Function)
 	table.insert(OrionLib.Connections, SignalConnect)
+
 	return SignalConnect
 end
-
-task.spawn(function()
-	while (OrionLib:IsRunning()) do
-		wait()
-	end
-
-	for _, Connection in next, OrionLib.Connections do
-		Connection:Disconnect()
-	end
-end)
 
 local function MakeDraggable(DragPoint, Main)
 	pcall(function()
@@ -110,15 +96,17 @@ local function MakeDraggable(DragPoint, Main)
 				end)
 			end
 		end)
+
 		AddConnection(DragPoint.InputChanged, function(Input)
 			if Input.UserInputType == Enum.UserInputType.MouseMovement then
 				DragInput = Input
 			end
 		end)
+
 		AddConnection(UserInputService.InputChanged, function(Input)
 			if Input == DragInput and Dragging then
 				local Delta = Input.Position - MousePos
-				Main.Position  = UDim2.new(FramePos.X.Scale,FramePos.X.Offset + Delta.X, FramePos.Y.Scale, FramePos.Y.Offset + Delta.Y)
+				Main.Position = UDim2.new(FramePos.X.Scale,FramePos.X.Offset + Delta.X, FramePos.Y.Scale, FramePos.Y.Offset + Delta.Y)
 			end
 		end)
 	end)
@@ -129,57 +117,54 @@ local function Create(Name, Properties, Children)
 	for i, v in next, Properties or {} do
 		Object[i] = v
 	end
+
 	for i, v in next, Children or {} do
 		v.Parent = Object
 	end
+
 	return Object
 end
 
 local function CreateElement(ElementName, ElementFunction)
-	OrionLib.Elements[ElementName] = function(...)
-		return ElementFunction(...)
-	end
+	OrionLib.Elements[ElementName] = ElementFunction
 end
 
 local function MakeElement(ElementName, ...)
-	local NewElement = OrionLib.Elements[ElementName](...)
-	return NewElement
+	return OrionLib.Elements[ElementName](...)
 end
 
 local function SetProps(Element, Props)
-	table.foreach(Props, function(Property, Value)
-		Element[Property] = Value
-	end)
+	for i, v in Props do
+		Element[i] = v
+	end
+
 	return Element
 end
 
 local function SetChildren(Element, Children)
-	table.foreach(Children, function(_, Child)
-		Child.Parent = Element
-	end)
+	for i, v in Children do
+		v.Parent = Element
+	end
+
 	return Element
 end
 
-local function Round(Number, Factor)
-	local Result = math.floor(Number/Factor + (math.sign(Number) * 0.5)) * Factor
-	if Result < 0 then Result = Result + Factor end
-	return Result
-end
+local Round = math.round
 
 local function ReturnProperty(Object)
 	if Object:IsA("Frame") or Object:IsA("TextButton") then
 		return "BackgroundColor3"
-	end 
-	if Object:IsA("ScrollingFrame") then
+
+	elseif Object:IsA("ScrollingFrame") then
 		return "ScrollBarImageColor3"
-	end 
-	if Object:IsA("UIStroke") then
+
+	elseif Object:IsA("UIStroke") then
 		return "Color"
-	end 
-	if Object:IsA("TextLabel") or Object:IsA("TextBox") then
+
+	elseif Object:IsA("TextLabel") or Object:IsA("TextBox") then
 		return "TextColor3"
-	end   
-	if Object:IsA("ImageLabel") or Object:IsA("ImageButton") then
+
+	elseif Object:IsA("ImageLabel") or Object:IsA("ImageButton") then
 		return "ImageColor3"
 	end   
 end
@@ -187,9 +172,11 @@ end
 local function AddThemeObject(Object, Type)
 	if not OrionLib.ThemeObjects[Type] then
 		OrionLib.ThemeObjects[Type] = {}
-	end    
+	end
+
 	table.insert(OrionLib.ThemeObjects[Type], Object)
 	Object[ReturnProperty(Object)] = OrionLib.Themes[OrionLib.SelectedTheme][Type]
+
 	return Object
 end    
 
@@ -208,24 +195,6 @@ end
 local function UnpackColor(Color)
 	return Color3.fromRGB(Color.R, Color.G, Color.B)
 end
-
-local function LoadCfg(Config)
-	local Data = HttpService:JSONDecode(Config)
-	table.foreach(Data, function(a,b)
-		if OrionLib.Flags[a] then
-			spawn(function() 
-				if OrionLib.Flags[a].Type == "Colorpicker" then
-					OrionLib.Flags[a]:Set(UnpackColor(b))
-				else
-					OrionLib.Flags[a]:Set(b)
-				end    
-			end)
-		else
-			warn("Orion Library Config Loader - Could not find ", a ,b)
-		end
-	end)
-end
-
 local WhitelistedMouse = {Enum.UserInputType.MouseButton1, Enum.UserInputType.MouseButton2,Enum.UserInputType.MouseButton3}
 local BlacklistedKeys = {Enum.KeyCode.Unknown,Enum.KeyCode.W,Enum.KeyCode.A,Enum.KeyCode.S,Enum.KeyCode.D,Enum.KeyCode.Up,Enum.KeyCode.Left,Enum.KeyCode.Down,Enum.KeyCode.Right,Enum.KeyCode.Slash,Enum.KeyCode.Tab,Enum.KeyCode.Backspace,Enum.KeyCode.Escape}
 
@@ -238,55 +207,49 @@ local function CheckKey(Table, Key)
 end
 
 CreateElement("Corner", function(Scale, Offset)
-	local Corner = Create("UICorner", {
+	return Create("UICorner", {
 		CornerRadius = UDim.new(Scale or 0, Offset or 10)
 	})
-	return Corner
 end)
 
 CreateElement("Stroke", function(Color, Thickness)
-	local Stroke = Create("UIStroke", {
+	return Create("UIStroke", {
 		Color = Color or Color3.fromRGB(255, 255, 255),
 		Thickness = Thickness or 1
 	})
-	return Stroke
 end)
 
 CreateElement("List", function(Scale, Offset)
-	local List = Create("UIListLayout", {
+	return Create("UIListLayout", {
 		SortOrder = Enum.SortOrder.LayoutOrder,
 		Padding = UDim.new(Scale or 0, Offset or 0)
 	})
-	return List
 end)
 
 CreateElement("Padding", function(Bottom, Left, Right, Top)
-	local Padding = Create("UIPadding", {
+	return Create("UIPadding", {
 		PaddingBottom = UDim.new(0, Bottom or 4),
 		PaddingLeft = UDim.new(0, Left or 4),
 		PaddingRight = UDim.new(0, Right or 4),
 		PaddingTop = UDim.new(0, Top or 4)
 	})
-	return Padding
 end)
 
 CreateElement("TFrame", function()
-	local TFrame = Create("Frame", {
+	return Create("Frame", {
 		BackgroundTransparency = 1
 	})
-	return TFrame
 end)
 
 CreateElement("Frame", function(Color)
-	local Frame = Create("Frame", {
+	return Create("Frame", {
 		BackgroundColor3 = Color or Color3.fromRGB(255, 255, 255),
 		BorderSizePixel = 0
 	})
-	return Frame
 end)
 
 CreateElement("RoundFrame", function(Color, Scale, Offset)
-	local Frame = Create("Frame", {
+	return Create("Frame", {
 		BackgroundColor3 = Color or Color3.fromRGB(255, 255, 255),
 		BorderSizePixel = 0
 	}, {
@@ -294,21 +257,19 @@ CreateElement("RoundFrame", function(Color, Scale, Offset)
 			CornerRadius = UDim.new(Scale, Offset)
 		})
 	})
-	return Frame
 end)
 
 CreateElement("Button", function()
-	local Button = Create("TextButton", {
+	return Create("TextButton", {
 		Text = "",
 		AutoButtonColor = false,
 		BackgroundTransparency = 1,
 		BorderSizePixel = 0
 	})
-	return Button
 end)
 
 CreateElement("ScrollFrame", function(Color, Width)
-	local ScrollFrame = Create("ScrollingFrame", {
+	return Create("ScrollingFrame", {
 		BackgroundTransparency = 1,
 		MidImage = "rbxassetid://7445543667",
 		BottomImage = "rbxassetid://7445543667",
@@ -318,7 +279,6 @@ CreateElement("ScrollFrame", function(Color, Width)
 		ScrollBarThickness = Width,
 		CanvasSize = UDim2.new(0, 0, 0, 0)
 	})
-	return ScrollFrame
 end)
 
 CreateElement("Image", function(ImageID)
@@ -335,15 +295,14 @@ CreateElement("Image", function(ImageID)
 end)
 
 CreateElement("ImageButton", function(ImageID)
-	local Image = Create("ImageButton", {
+	return Create("ImageButton", {
 		Image = ImageID,
 		BackgroundTransparency = 1
 	})
-	return Image
 end)
 
 CreateElement("Label", function(Text, TextSize, Transparency)
-	local Label = Create("TextLabel", {
+	return Create("TextLabel", {
 		Text = Text or "",
 		TextColor3 = Color3.fromRGB(240, 240, 240),
 		TextTransparency = Transparency or 0,
@@ -353,7 +312,6 @@ CreateElement("Label", function(Text, TextSize, Transparency)
 		BackgroundTransparency = 1,
 		TextXAlignment = Enum.TextXAlignment.Left
 	})
-	return Label
 end)
 
 local NotificationHolder = SetProps(SetChildren(MakeElement("TFrame"), {
@@ -425,7 +383,7 @@ function OrionLib:MakeNotification(NotificationConfig)
 		TweenService:Create(NotificationFrame.Content, TweenInfo.new(0.6, Enum.EasingStyle.Quint), {TextTransparency = 0.5}):Play()
 		wait(0.05)
 
-		NotificationFrame:TweenPosition(UDim2.new(1, 20, 0, 0),'In','Quint',0.8,true)
+		NotificationFrame:TweenPosition(UDim2.new(1, 20, 0, 0), 'In', 'Quint', 0.8,true)
 		wait(1.35)
 		NotificationFrame:Destroy()
 	end)
@@ -575,6 +533,7 @@ function OrionLib:MakeWindow(WindowConfig)
 			Content = "Tap RightShift to reopen the interface",
 			Time = 5
 		})
+
 		WindowConfig.CloseCallback()
 	end)
 
@@ -643,24 +602,12 @@ function OrionLib:MakeWindow(WindowConfig)
 	end	
 
 	local TabFunction = {}
-	function TabFunction:MakeTab(TabConfig)
-		TabConfig = TabConfig or {}
-		TabConfig.Name = TabConfig.Name or "Tab"
-		TabConfig.Icon = TabConfig.Icon or ""
-		TabConfig.PremiumOnly = TabConfig.PremiumOnly or false
-
+	function TabFunction:MakeTab(Name)
 		local TabFrame = SetChildren(SetProps(MakeElement("Button"), {
 			Size = UDim2.new(1, 0, 0, 30),
 			Parent = TabHolder
 		}), {
-			AddThemeObject(SetProps(MakeElement("Image", TabConfig.Icon), {
-				AnchorPoint = Vector2.new(0, 0.5),
-				Size = UDim2.new(0, 18, 0, 18),
-				Position = UDim2.new(0, 10, 0.5, 0),
-				ImageTransparency = 0.4,
-				Name = "Ico"
-			}), "Text"),
-			AddThemeObject(SetProps(MakeElement("Label", TabConfig.Name, 14), {
+			AddThemeObject(SetProps(MakeElement("Label", Name, 14), {
 				Size = UDim2.new(1, -35, 1, 0),
 				Position = UDim2.new(0, 35, 0, 0),
 				Font = Enum.Font.GothamSemibold,
@@ -668,10 +615,6 @@ function OrionLib:MakeWindow(WindowConfig)
 				Name = "Title"
 			}), "Text")
 		})
-
-		if GetIcon(TabConfig.Icon) ~= nil then
-			TabFrame.Ico.Image = GetIcon(TabConfig.Icon)
-		end	
 
 		local Container = AddThemeObject(SetChildren(SetProps(MakeElement("ScrollFrame", Color3.fromRGB(255, 255, 255), 5), {
 			Size = UDim2.new(1, -150, 1, -50),
@@ -688,7 +631,6 @@ function OrionLib:MakeWindow(WindowConfig)
 
 		if FirstTab then
 			FirstTab = false
-			TabFrame.Ico.ImageTransparency = 0
 			TabFrame.Title.TextTransparency = 0
 			TabFrame.Title.Font = Enum.Font.GothamBlack
 			Container.Visible = true
@@ -698,16 +640,16 @@ function OrionLib:MakeWindow(WindowConfig)
 			for _, Tab in next, TabHolder:GetChildren() do
 				if Tab:IsA("TextButton") then
 					Tab.Title.Font = Enum.Font.GothamSemibold
-					TweenService:Create(Tab.Ico, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {ImageTransparency = 0.4}):Play()
 					TweenService:Create(Tab.Title, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {TextTransparency = 0.4}):Play()
 				end    
 			end
+			
 			for _, ItemContainer in next, MainWindow:GetChildren() do
 				if ItemContainer.Name == "ItemContainer" then
 					ItemContainer.Visible = false
 				end    
-			end  
-			TweenService:Create(TabFrame.Ico, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {ImageTransparency = 0}):Play()
+			end
+
 			TweenService:Create(TabFrame.Title, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {TextTransparency = 0}):Play()
 			TabFrame.Title.Font = Enum.Font.GothamBlack
 			Container.Visible = true   
@@ -779,11 +721,6 @@ function OrionLib:MakeWindow(WindowConfig)
 			end  
 
 			function ElementFunction:AddButton(ButtonConfig)
-				ButtonConfig = ButtonConfig or {}
-				ButtonConfig.Name = ButtonConfig.Name or "Button"
-				ButtonConfig.Callback = ButtonConfig.Callback or function() end
-				ButtonConfig.Icon = ButtonConfig.Icon or "rbxassetid://3944703587"
-
 				local Button = {}
 
 				local Click = SetProps(MakeElement("Button"), {
@@ -800,10 +737,6 @@ function OrionLib:MakeWindow(WindowConfig)
 						Font = Enum.Font.GothamBold,
 						Name = "Content"
 					}), "Text"),
-					AddThemeObject(SetProps(MakeElement("Image", ButtonConfig.Icon), {
-						Size = UDim2.new(0, 20, 0, 20),
-						Position = UDim2.new(1, -30, 0, 7),
-					}), "TextDark"),
 					AddThemeObject(MakeElement("Stroke"), "Stroke"),
 					Click
 				}), "Second")
@@ -818,9 +751,7 @@ function OrionLib:MakeWindow(WindowConfig)
 
 				AddConnection(Click.MouseButton1Up, function()
 					TweenService:Create(ButtonFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(OrionLib.Themes[OrionLib.SelectedTheme].Second.R * 255 + 3, OrionLib.Themes[OrionLib.SelectedTheme].Second.G * 255 + 3, OrionLib.Themes[OrionLib.SelectedTheme].Second.B * 255 + 3)}):Play()
-					spawn(function()
-						ButtonConfig.Callback()
-					end)
+					spawn(ButtonConfig.Callback)
 				end)
 
 				AddConnection(Click.MouseButton1Down, function()
@@ -835,7 +766,6 @@ function OrionLib:MakeWindow(WindowConfig)
 			end
 
 			function ElementFunction:AddToggle(ToggleConfig)
-				ToggleConfig = ToggleConfig or {}
 				ToggleConfig.Name = ToggleConfig.Name or "Toggle"
 				ToggleConfig.Default = ToggleConfig.Default or false
 				ToggleConfig.Callback = ToggleConfig.Callback or function() end
@@ -924,7 +854,6 @@ function OrionLib:MakeWindow(WindowConfig)
 			end  
 
 			function ElementFunction:AddSlider(SliderConfig)
-				SliderConfig = SliderConfig or {}
 				SliderConfig.Name = SliderConfig.Name or "Slider"
 				SliderConfig.Min = SliderConfig.Min or 0
 				SliderConfig.Max = SliderConfig.Max or 100
@@ -1535,7 +1464,7 @@ function OrionLib:MakeWindow(WindowConfig)
 						end;
 
 						HueInput = AddConnection(RunService.RenderStepped, function()
-							local HueY = (math.clamp(Mouse.Y - Hue.AbsolutePosition.Y, 0, Hue.AbsoluteSize.Y) / Hue.AbsoluteSize.Y)
+							local HueY = math.clamp(Mouse.Y - Hue.AbsolutePosition.Y, 0, Hue.AbsoluteSize.Y) / Hue.AbsoluteSize.Y
 
 							HueSelection.Position = UDim2.new(0.5, 0, HueY, 0)
 							ColorH = 1 - HueY
@@ -1604,10 +1533,10 @@ function OrionLib:MakeWindow(WindowConfig)
 			end
 
 			return SectionFunction
-		end	
+		end
 
 		for i, v in next, GetElements(Container) do
-			ElementFunction[i] = v 
+			ElementFunction[i] = v
 		end
 
 		return ElementFunction   
