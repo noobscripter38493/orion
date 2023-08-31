@@ -1107,15 +1107,7 @@ function OrionLib:MakeWindow(WindowConfig)
 			end
 
 			function ElementFunction:AddBind(BindConfig)
-				BindConfig.Name = BindConfig.Name or "Bind"
-				BindConfig.Default = BindConfig.Default or Enum.KeyCode.Unknown
-				BindConfig.Hold = BindConfig.Hold or false
-				BindConfig.Callback = BindConfig.Callback or function() end
-				BindConfig.Flag = BindConfig.Flag or nil
-				BindConfig.Save = BindConfig.Save or false
-
-				local Bind = {Value, Binding = false, Type = "Bind", Save = BindConfig.Save}
-				local Holding = false
+				local Bind = {Value, Binding = false, Type = "Bind"}
 
 				local Click = SetProps(MakeElement("Button"), {
 					Size = UDim2.new(1, 0, 1, 0)
@@ -1168,12 +1160,7 @@ function OrionLib:MakeWindow(WindowConfig)
 					end
 
 					if Input.KeyCode.Name == Bind.Value or Input.UserInputType.Name == Bind.Value and not Bind.Binding then
-						if BindConfig.Hold then
-							Holding = true
-							BindConfig.Callback(Holding)
-						else
-							BindConfig.Callback()
-						end
+						BindConfig.Callback()
 
 					elseif Bind.Binding then
 						local Key
@@ -1182,22 +1169,16 @@ function OrionLib:MakeWindow(WindowConfig)
 								Key = Input.KeyCode
 							end
 						end)
+
 						pcall(function()
 							if CheckKey(WhitelistedMouse, Input.UserInputType) and not Key then
 								Key = Input.UserInputType
 							end
 						end)
+
 						Key = Key or Bind.Value
 						Bind:Set(Key)
-					end
-				end)
-
-				AddConnection(UserInputService.InputEnded, function(Input)
-					if Input.KeyCode.Name == Bind.Value or Input.UserInputType.Name == Bind.Value then
-						if BindConfig.Hold and Holding then
-							Holding = false
-							BindConfig.Callback(Holding)
-						end
+						BindConfig.BindSetCallback(Input.KeyCode)
 					end
 				end)
 
