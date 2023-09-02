@@ -632,9 +632,8 @@ function OrionLib:MakeWindow(MainWindowName)
 				local Toggle = {Value = ToggleConfig.Default}
 
 				local ToggleClick = SetProps(MakeElement("Button"), {
-					Size = UDim2.new(0, 24, 0, 24),
-					Position = UDim2.new(1, -24, 0.5, 0),
-					AnchorPoint = Vector2.new(0.5, 0.5)
+					Size = UDim2.new(1, -12, 1, 0),
+					Position = UDim2.new(0, 12, 0, 0)
 				})
 
 				Toggle.Button = ToggleClick
@@ -656,7 +655,7 @@ function OrionLib:MakeWindow(MainWindowName)
 						AnchorPoint = Vector2.new(1, 0.5)
 					}), {
 						AddThemeObject(MakeElement("Stroke"), "Stroke"),
-						AddThemeObject(SetProps(MakeElement("Label", "This", 14), {
+						AddThemeObject(SetProps(MakeElement("Label", "", 14), {
 							Size = UDim2.new(1, 0, 1, 0),
 							Font = Enum.Font.GothamBold,
 							TextXAlignment = Enum.TextXAlignment.Center,
@@ -739,10 +738,10 @@ function OrionLib:MakeWindow(MainWindowName)
 						Name = "Content"
 					}), "Text"),
 					AddThemeObject(MakeElement("Stroke"), "Stroke"),
-					BindBox,
-					BindClick,
 					ToggleBox,
-					ToggleClick
+					ToggleClick,
+					BindBox,
+					BindClick
 				}), "Second")
 
 				function Toggle:Set(Value)
