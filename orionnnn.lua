@@ -631,11 +631,83 @@ function OrionLib:MakeWindow(MainWindowName)
 
 				local Toggle = {Value = ToggleConfig.Default}
 
-				local Click = SetProps(MakeElement("Button"), {
-					Size = UDim2.new(1, 0, 1, 0)
+				local ToggleClick = SetProps(MakeElement("Button"), {
+					Size = UDim2.new(0, 24, 0, 24),
+					Position = UDim2.new(1, -24, 0.5, 0),
+					AnchorPoint = Vector2.new(0.5, 0.5)
 				})
 
-				Toggle.Button = Click
+				Toggle.Button = ToggleClick
+
+				local BindBox
+				local Bind = {Binding = false}
+				local BindClick
+				if ToggleConfig.Keybind then
+					Bind.Value = ToggleConfig.DefaultKeybind
+					BindClick = SetProps(MakeElement("Button"), {
+						Size = UDim2.new(0, 24, 0, 24),
+						Position = UDim2.new(.9, -24, 0.5, 0),
+						AnchorPoint = Vector2.new(0.5, 0.5)
+					})
+
+					BindBox = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 4), {
+						Size = UDim2.new(0, 24, 0, 24),
+						Position = UDim2.new(.9, -12, .5, 0),
+						AnchorPoint = Vector2.new(1, 0.5)
+					}), {
+						AddThemeObject(MakeElement("Stroke"), "Stroke"),
+						AddThemeObject(SetProps(MakeElement("Label", "This", 14), {
+							Size = UDim2.new(1, 0, 1, 0),
+							Font = Enum.Font.GothamBold,
+							TextXAlignment = Enum.TextXAlignment.Center,
+							Name = "Value"
+						}), "Text")
+					}), "Main")
+
+					AddConnection(BindBox.Value:GetPropertyChangedSignal("Text"), function()
+						TweenService:Create(BindBox, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Size = UDim2.new(0, BindBox.Value.TextBounds.X + 16, 0, 24)}):Play()
+					end)
+	
+					AddConnection(BindClick.InputEnded, function(Input)
+						if Input.UserInputType == Enum.UserInputType.MouseButton1 then
+							if Bind.Binding then 
+								return 
+							end
+	
+							Bind.Binding = true
+						end
+					end)
+	
+					AddConnection(UserInputService.InputBegan, function(Input)
+						if UserInputService:GetFocusedTextBox() or Input.UserInputType ~= Enum.UserInputType.Keyboard then
+							return
+						end
+	
+						if Input.KeyCode.Name == Bind.Value and not Bind.Binding then
+							Toggle:Set(not Toggle.Value)
+	
+						elseif Bind.Binding then
+							local Key
+							if not CheckKey(BlacklistedKeys, Input.KeyCode) then
+								Key = Input.KeyCode.Name
+							end
+	
+							if Key then
+								Bind:Set(Key)
+								ToggleConfig.BindSetCallback(Key)
+							end
+						end
+					end)
+
+					function Bind:Set(Key)
+						Bind.Binding = false
+						Bind.Value = Key or Bind.Value
+						Bind.Value = Bind.Value.Name or Bind.Value
+						BindBox.Value.Text = Bind.Value
+					end
+	
+					Bind:Set(ToggleConfig.DefaultKeybind)
+				end
 
 				local ToggleBox = SetChildren(SetProps(MakeElement("RoundFrame", ToggleConfig.Color, 0, 4), {
 					Size = UDim2.new(0, 24, 0, 24),
@@ -667,8 +739,10 @@ function OrionLib:MakeWindow(MainWindowName)
 						Name = "Content"
 					}), "Text"),
 					AddThemeObject(MakeElement("Stroke"), "Stroke"),
+					BindBox,
+					BindClick,
 					ToggleBox,
-					Click
+					ToggleClick
 				}), "Second")
 
 				function Toggle:Set(Value)
@@ -680,27 +754,27 @@ function OrionLib:MakeWindow(MainWindowName)
 				end
 				
 				function Toggle:Remove()
-					Click:Destroy()
+					ToggleClick:Destroy()
 					ToggleBox:Destroy()
 					ToggleFrame:Destroy()
 				end
 
 				Toggle:Set(Toggle.Value)
 
-				AddConnection(Click.MouseEnter, function()
+				AddConnection(ToggleClick.MouseEnter, function()
 					TweenService:Create(ToggleFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(OrionLib.Themes[OrionLib.SelectedTheme].Second.R * 255 + 3, OrionLib.Themes[OrionLib.SelectedTheme].Second.G * 255 + 3, OrionLib.Themes[OrionLib.SelectedTheme].Second.B * 255 + 3)}):Play()
 				end)
 
-				AddConnection(Click.MouseLeave, function()
+				AddConnection(ToggleClick.MouseLeave, function()
 					TweenService:Create(ToggleFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = OrionLib.Themes[OrionLib.SelectedTheme].Second}):Play()
 				end)
 
-				AddConnection(Click.MouseButton1Up, function()
+				AddConnection(ToggleClick.MouseButton1Up, function()
 					TweenService:Create(ToggleFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(OrionLib.Themes[OrionLib.SelectedTheme].Second.R * 255 + 3, OrionLib.Themes[OrionLib.SelectedTheme].Second.G * 255 + 3, OrionLib.Themes[OrionLib.SelectedTheme].Second.B * 255 + 3)}):Play()
 					Toggle:Set(not Toggle.Value)
 				end)
 
-				AddConnection(Click.MouseButton1Down, function()
+				AddConnection(ToggleClick.MouseButton1Down, function()
 					TweenService:Create(ToggleFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(OrionLib.Themes[OrionLib.SelectedTheme].Second.R * 255 + 6, OrionLib.Themes[OrionLib.SelectedTheme].Second.G * 255 + 6, OrionLib.Themes[OrionLib.SelectedTheme].Second.B * 255 + 6)}):Play()
 				end)
 				
@@ -899,13 +973,14 @@ function OrionLib:MakeWindow(MainWindowName)
 
 				function Dropdown:Refresh(Options, Delete)
 					if Delete then
-						for _,v in Dropdown.Buttons do
+						for _, v in Dropdown.Buttons do
 							v:Destroy()
 						end
 
 						table.clear(Dropdown.Options)
 						table.clear(Dropdown.Buttons)
 					end
+
 					Dropdown.Options = Options
 					AddOptions(Dropdown.Options)
 				end  
@@ -931,6 +1006,7 @@ function OrionLib:MakeWindow(MainWindowName)
 					end	
 					TweenService:Create(Dropdown.Buttons[Value], TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundTransparency = 0}):Play()
 					TweenService:Create(Dropdown.Buttons[Value].Title, TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {TextTransparency = 0}):Play()
+
 					return DropdownConfig.Callback(Dropdown.Value)
 				end
 
@@ -993,37 +1069,33 @@ function OrionLib:MakeWindow(MainWindowName)
 
 				AddConnection(Click.InputEnded, function(Input)
 					if Input.UserInputType == Enum.UserInputType.MouseButton1 then
-						if Bind.Binding then return end
+						if Bind.Binding then 
+							return 
+						end
+
 						Bind.Binding = true
 						BindBox.Value.Text = ""
 					end
 				end)
 
 				AddConnection(UserInputService.InputBegan, function(Input)
-					if UserInputService:GetFocusedTextBox() then 
-						return 
+					if UserInputService:GetFocusedTextBox() or Input.UserInputType ~= Enum.UserInputType.Keyboard then
+						return
 					end
 
-					if Input.KeyCode.Name == Bind.Value or Input.UserInputType.Name == Bind.Value and not Bind.Binding then
+					if Input.KeyCode.Name == Bind.Value and not Bind.Binding then
 						BindConfig.Callback()
 
 					elseif Bind.Binding then
 						local Key
-						pcall(function()
-							if not CheckKey(BlacklistedKeys, Input.KeyCode) then
-								Key = Input.KeyCode
-							end
-						end)
+						if not CheckKey(BlacklistedKeys, Input.KeyCode) then
+							Key = Input.KeyCode.Name
+						end
 
-						pcall(function()
-							if CheckKey(WhitelistedMouse, Input.UserInputType) and not Key then
-								Key = Input.UserInputType
-							end
-						end)
-
-						Key = Key or Bind.Value
-						Bind:Set(Key)
-						BindConfig.BindSetCallback(Input.KeyCode)
+						if Key then
+							Bind:Set(Key)
+							BindConfig.BindSetCallback(Key)
+						end
 					end
 				end)
 
@@ -1045,9 +1117,8 @@ function OrionLib:MakeWindow(MainWindowName)
 
 				function Bind:Set(Key)
 					Bind.Binding = false
-					Bind.Value = Key or Bind.Value
-					Bind.Value = Bind.Value.Name or Bind.Value
-					BindBox.Value.Text = Bind.Value
+					Bind.Value = Key
+					BindBox.Value.Text = Key
 				end
 
 				Bind:Set(BindConfig.Default)
