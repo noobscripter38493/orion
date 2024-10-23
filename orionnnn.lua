@@ -22,10 +22,6 @@ local OrionLib = {
 	SelectedTheme = "Default"
 }
 
-local function GetIcon(IconName)
-	return 
-end   
-
 local Orion = Instance.new("ScreenGui")
 Orion.Name = "Orion"
 Orion.Parent = game.CoreGui
@@ -256,11 +252,6 @@ CreateElement("Image", function(ImageID)
 		Image = ImageID,
 		BackgroundTransparency = 1
 	})
-
-	local icon = GetIcon(ImageID)
-	if icon ~= nil then
-		ImageNew.Image = icon
-	end	
 
 	return ImageNew
 end)
