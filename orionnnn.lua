@@ -22,10 +22,8 @@ local OrionLib = {
 	SelectedTheme = "Default"
 }
 
-local Icons = HttpService:JSONDecode(game:HttpGet("https://raw.githubusercontent.com/evoincorp/lucideblox/master/src/modules/util/icons.json")).icons
-
 local function GetIcon(IconName)
-	return Icons[IconName]
+	return 
 end   
 
 local Orion = Instance.new("ScreenGui")
